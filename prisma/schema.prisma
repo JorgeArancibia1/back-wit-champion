@@ -5,7 +5,8 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "darwin"]
 }
 
 datasource db {
@@ -26,7 +27,9 @@ model Game {
   day       DateTime
   hour      DateTime
   month     String
-  players   String[] @default([])
+  teamA     String[]
+  teamB     String[]
+  // players   String[] @default([])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

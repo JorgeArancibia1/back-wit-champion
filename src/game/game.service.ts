@@ -5,48 +5,45 @@ import {
   NotFoundException,
   OnModuleInit,
 } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
 import { PrismaClient } from '@prisma/client';
-import { isValidObjectId } from 'mongoose';
+import { Model, isValidObjectId } from 'mongoose';
 import { CreateGameDto } from './dto/create-game.dto';
 import { UpdateGameDto } from './dto/update-game.dto';
 import { Game } from './entities/game.entity';
 
 @Injectable()
 export class GameService extends PrismaClient implements OnModuleInit {
+  private readonly logger = new Logger('AuthService');
+
   async onModuleInit() {
     await this.$connect();
     this.logger.log('MongoDB connected');
   }
-  // constructor(
-  //   @InjectModel(Game.name)
-  //   private readonly gameModel: Model<Game>,
-  // ) {}
-
-  private readonly logger = new Logger('AuthService');
-
-  constructor(private readonly gameService: GameService) {
+  constructor(
+    @InjectModel(Game.name) private readonly gameModel: Model<GameService>,
+  ) {
     super();
   }
 
   async create(createGameDto: CreateGameDto) {
     // Validaciones
     createGameDto.place = createGameDto.place.toLowerCase();
-    const { teamA, teamB, ...rest } = createGameDto;
+    // const { teamA, teamB, ...rest } = createGameDto;
 
     try {
       // Se crea en BD
       console.log(createGameDto.month);
-      const newGame = await this.game.create({
-        data: {
-          ...rest,
-          TeamA: teamA,
-          TeamB: {
-            id: 'asdasadas',
-          },
-        },
-      });
-      // const game = await this.gameModel.create(createGameDto);
-      return newGame;
+      // const newGame = await this.gameModel.create({
+      //   place: createGameDto.place,
+      //   day: createGameDto.day,
+      //   hour: createGameDto.hour,
+      //   month: createGameDto.month,
+      //   teamA: createGameDto.teamA,
+      //   teamB: createGameDto.teamB,
+      // });
+      const game = await this.gameModel.create(createGameDto);
+      return game;
     } catch (error) {
       if (error.code === 11000) {
         throw new Error(
@@ -70,20 +67,20 @@ export class GameService extends PrismaClient implements OnModuleInit {
 
     //Si es un número se hace la evaluación
     if (!isNaN(+term)) {
-      game = await this.gameModel.findOne({
-        id: term,
-      });
+      // game = await this.gameService.findOne({
+      //   id: term,
+      // });
     }
     // Validacion de Mongo ID
     if (!game && isValidObjectId(term)) {
-      game = await this.gameModel.findById(term);
+      // game = await this.gameService.findById(term);
     }
 
     // Buscar por nombre
     if (!game) {
-      game = await this.gameModel.findOne({
-        month: term.toLowerCase().trim(),
-      });
+      // game = await this.gameService.findOne({
+      //   month: term.toLowerCase().trim(),
+      // });
     }
 
     if (!game) {

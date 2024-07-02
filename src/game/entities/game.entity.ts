@@ -1,24 +1,34 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
-import { Team } from '../interfaces';
 
 @Schema()
 export class Game extends Document {
+  @Prop({
+    index: true,
+  })
   place: string;
   @Prop({
     index: true,
   })
   day: string;
+  @Prop({
+    index: true,
+  })
   month: string;
+  @Prop({
+    index: true,
+  })
   hour: string;
   @Prop({
-    // unique: true,
+    index: true,
+    required: true,
   })
-  teamA: Team;
+  teamA: string[];
   @Prop({
-    // unique: true,
+    index: true,
+    required: true,
   })
-  teamB: Team;
+  teamB: string[];
   // Teams: string[];
   // players: string[];
 }
