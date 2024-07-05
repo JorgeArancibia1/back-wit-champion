@@ -1,5 +1,4 @@
-import { Prop } from '@nestjs/mongoose';
-import { IsString, MinLength } from 'class-validator';
+import { IsArray, IsString, MinLength } from 'class-validator';
 
 export class CreateGameDto {
   @IsString()
@@ -12,10 +11,10 @@ export class CreateGameDto {
   month: string;
   @IsString()
   hour: string;
-  // @IsString()
-  @Prop({ required: true })
+  // @IsString({ each: true })
+  @IsArray({ each: true })
   teamA: string[];
   // @IsString()
-  @Prop({ required: true })
+  @IsArray({ each: true })
   teamB: string[];
 }
