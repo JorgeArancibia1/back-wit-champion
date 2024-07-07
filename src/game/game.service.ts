@@ -8,6 +8,7 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { PrismaClient } from '@prisma/client';
 import { Model, isValidObjectId } from 'mongoose';
+import { PrismaService } from '../prisma.service';
 import { CreateGameDto } from './dto/create-game.dto';
 import { UpdateGameDto } from './dto/update-game.dto';
 import { Game } from './entities/game.entity';
@@ -22,6 +23,7 @@ export class GameService extends PrismaClient implements OnModuleInit {
   }
   constructor(
     @InjectModel(Game.name) private readonly gameModel: Model<GameService>,
+    private readonly prisma: PrismaService,
   ) {
     super();
   }
@@ -29,19 +31,8 @@ export class GameService extends PrismaClient implements OnModuleInit {
   async create(createGameDto: CreateGameDto) {
     // Validaciones
     createGameDto.place = createGameDto.place.toLowerCase();
-    // const { teamA, teamB, ...rest } = createGameDto;
 
     try {
-      // Se crea en BD
-      console.log(createGameDto.month);
-      // const newGame = await this.gameModel.create({
-      //   place: createGameDto.place,
-      //   day: createGameDto.day,
-      //   hour: createGameDto.hour,
-      //   month: createGameDto.month,
-      //   teamA: createGameDto.teamA,
-      //   teamB: createGameDto.teamB,
-      // });
       const game = await this.gameModel.create(createGameDto);
       return game;
     } catch (error) {
@@ -57,8 +48,8 @@ export class GameService extends PrismaClient implements OnModuleInit {
     }
   }
 
-  findAll() {
-    return `This action returns all game`;
+  async findAll() {
+    return await this.gameModel.find();
   }
 
   async findOne(term: string) {
@@ -103,7 +94,34 @@ export class GameService extends PrismaClient implements OnModuleInit {
     return { ...game.toJSON(), ...updateGameDto };
   }
 
-  remove(id: number) {
+  remove(id: string) {
     return `This action removes a #${id} game`;
+  }
+
+  async createPrismaGame(createGameDto: CreateGameDto) {
+    // Validaciones
+    createGameDto.place = createGameDto.place.toLowerCase();
+
+    try {
+      const game = await this.prisma.game.create({
+        data: createGameDto,
+      });
+      return game;
+    } catch (error) {
+      if (error.code === 'P2002') {
+        // Error de violación de restricción única
+        throw new Error(
+          `El partido ya existe Error: ${JSON.stringify(error.meta)}`,
+        );
+      }
+      console.log(error);
+      throw new InternalServerErrorException(
+        `No se pudo crear el juego - CHECKEAR LOGS`,
+      );
+    }
+  }
+
+  async findAllGames() {
+    return this.prisma.game.findMany();
   }
 }

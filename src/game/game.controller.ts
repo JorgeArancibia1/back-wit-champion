@@ -41,6 +41,36 @@ export class GameController {
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.gameService.remove(+id);
+    return this.gameService.remove(id);
+  }
+
+  // PRISMA CONTROLLERS
+  @Post('/prisma')
+  @HttpCode(HttpStatus.CREATED)
+  async createGame(@Body() createGameDto: CreateGameDto) {
+    return this.gameService.create(createGameDto);
+  }
+
+  @Get('/prisma')
+  async findAllGames() {
+    return this.gameService.findAll();
+  }
+
+  @Get(':id')
+  async findOneGame(@Param('id') id: string) {
+    return this.gameService.findOne(id);
+  }
+
+  @Patch(':id')
+  async updateGame(
+    @Param('id') id: string,
+    @Body() updateGameDto: UpdateGameDto,
+  ) {
+    return this.gameService.update(id, updateGameDto);
+  }
+
+  @Delete(':id')
+  async removeGame(@Param('id') id: string) {
+    return this.gameService.remove(id);
   }
 }
