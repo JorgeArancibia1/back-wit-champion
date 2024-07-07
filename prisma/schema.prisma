@@ -21,11 +21,11 @@ model Team {
 }
 
 model Game {
-  id String @id @default(uuid()) @map("_id") @db.ObjectId
+  id String @id @default(auto()) @map("_id") @db.ObjectId
 
   place     String
-  day       DateTime
-  hour      DateTime
+  day       String
+  hour      String
   month     String
   teamA     String[]
   teamB     String[]
