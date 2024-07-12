@@ -12,9 +12,9 @@ export class CreateGameDto {
   @IsString()
   hour: string;
   // @IsString({ each: true })
-  @IsArray({ each: true })
+  @IsArray()
   teamA: string[];
   // @IsString()
-  @IsArray({ each: true })
+  @IsArray()
   teamB: string[];
 }

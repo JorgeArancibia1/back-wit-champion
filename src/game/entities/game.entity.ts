@@ -29,8 +29,6 @@ export class Game extends Document {
     required: true,
   })
   teamB: string[];
-  // Teams: string[];
-  // players: string[];
 }
 
 export const GameSchema = SchemaFactory.createForClass(Game);

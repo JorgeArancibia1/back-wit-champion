@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { PrismaClient } from '@prisma/client';
-import { Model, isValidObjectId } from 'mongoose';
+import { Model } from 'mongoose';
 import { PrismaService } from '../prisma.service';
 import { CreateGameDto } from './dto/create-game.dto';
 import { UpdateGameDto } from './dto/update-game.dto';
@@ -52,60 +52,32 @@ export class GameService extends PrismaClient implements OnModuleInit {
     return await this.gameModel.find();
   }
 
-  async findOne(term: string) {
-    console.log('TERM => ', term);
-    let game: Game;
-
-    //Si es un número se hace la evaluación
-    if (!isNaN(+term)) {
-      // game = await this.gameService.findOne({
-      //   id: term,
-      // });
-    }
-    // Validacion de Mongo ID
-    if (!game && isValidObjectId(term)) {
-      // game = await this.gameService.findById(term);
-    }
-
-    // Buscar por nombre
-    if (!game) {
-      // game = await this.gameService.findOne({
-      //   month: term.toLowerCase().trim(),
-      // });
-    }
-
-    if (!game) {
-      throw new NotFoundException(
-        `Game with id, day or place no ${term} not found`,
-      );
-    }
-    return game;
-  }
-
   async update(term: string, updateGameDto: UpdateGameDto) {
-    const game = await this.findOne(term);
+    const game = await this.findOneGameByMonth(term);
     if (updateGameDto.day) {
       updateGameDto.day = updateGameDto.day.toLowerCase();
     }
 
     //Traer Game
-    await game.updateOne(updateGameDto);
+    // await game.updateOne(updateGameDto);
 
-    return { ...game.toJSON(), ...updateGameDto };
+    return { ...game, ...updateGameDto };
   }
 
   remove(id: string) {
     return `This action removes a #${id} game`;
   }
 
+  // PRISMA SERVICES
   async createPrismaGame(createGameDto: CreateGameDto) {
     // Validaciones
-    createGameDto.place = createGameDto.place.toLowerCase();
+    createGameDto.place = createGameDto.place.toUpperCase();
 
     try {
       const game = await this.prisma.game.create({
         data: createGameDto,
       });
+
       return game;
     } catch (error) {
       if (error.code === 'P2002') {
@@ -122,6 +94,72 @@ export class GameService extends PrismaClient implements OnModuleInit {
   }
 
   async findAllGames() {
-    return this.prisma.game.findMany();
+    return this.prisma.game.findMany({
+      orderBy: {
+        createdAt: 'asc',
+      },
+    });
   }
+
+  async findOneGameByMonth(term: string) {
+    console.log('TERM => ', term); // Agosto
+    const foundGame = await this.prisma.game.findMany({
+      where: {
+        month: {
+          equals: 'Agosto',
+        },
+      },
+    });
+
+    console.log(foundGame);
+
+    if (foundGame.length === 0) {
+      throw new NotFoundException(`Juego por mes de ${term} no encontrado`);
+    }
+
+    return foundGame;
+  }
+
+  async updateGame(id: string, updateGameDto: UpdateGameDto) {
+    try {
+      const game = await this.prisma.game.update({
+        where: { id },
+        data: updateGameDto,
+      });
+      return game;
+    } catch (error) {
+      if (error.code === 'P2025') {
+        throw new NotFoundException(`Juego con ID ${id} no encontrado`);
+      }
+      console.log(error);
+      throw new InternalServerErrorException(
+        `No se pudo actualizar el juego - CHECKEAR LOGS`,
+      );
+    }
+  }
+
+  async removeGame(id: string) {
+    try {
+      await this.prisma.game.delete({ where: { id } });
+      return { message: `Juego con ID ${id} eliminado` };
+    } catch (error) {
+      if (error.code === 'P2025') {
+        throw new NotFoundException(`Juego con ID ${id} no encontrado`);
+      }
+      console.log(error);
+      throw new InternalServerErrorException(
+        `No se pudo eliminar el juego - CHECKEAR LOGS`,
+      );
+    }
+  }
+
+  // Crea solo si el registro no existe
+  // async createUniqueGame(createGameDto: CreateGameDto) {
+  //   const upsertedGame = await prisma.game.upsert({
+  //     where: { day: day },
+  //     create: { name: 'John Doe', email: 'email@example.com' },
+  //     update: { name: 'John Doe' },
+  //   });
+  //   return upsertedGame;
+  // }
 }

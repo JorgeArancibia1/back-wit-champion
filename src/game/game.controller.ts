@@ -28,10 +28,10 @@ export class GameController {
     return this.gameService.findAll();
   }
 
-  @Get(':term')
-  findOne(@Param('term') term: string) {
-    return this.gameService.findOne(term);
-  }
+  // @Get(':term')
+  // findOne(@Param('term') term: string) {
+  //   return this.gameService.findOne(term);
+  // }
 
   @Patch(':term')
   update(@Param('term') term: string, @Body() updateGameDto: UpdateGameDto) {
@@ -56,12 +56,13 @@ export class GameController {
     return this.gameService.findAll();
   }
 
-  @Get(':id')
-  async findOneGame(@Param('id') id: string) {
-    return this.gameService.findOne(id);
+  @Get(':term')
+  @HttpCode(HttpStatus.OK)
+  async findOneByMonth(@Param('term') term: string) {
+    return await this.gameService.findOneGameByMonth(term);
   }
 
-  @Patch(':id')
+  @Patch('/prisma/:id')
   async updateGame(
     @Param('id') id: string,
     @Body() updateGameDto: UpdateGameDto,
@@ -69,7 +70,7 @@ export class GameController {
     return this.gameService.update(id, updateGameDto);
   }
 
-  @Delete(':id')
+  @Delete('/prisma/:id')
   async removeGame(@Param('id') id: string) {
     return this.gameService.remove(id);
   }
